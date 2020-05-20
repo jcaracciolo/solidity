@@ -247,7 +247,7 @@ bool ASTJsonConverter::visit(ImportDirective const& _node)
 	std::vector<pair<string, Json::Value>> attributes = {
 		make_pair("file", _node.path()),
 		make_pair("absolutePath", _node.annotation().absolutePath),
-		make_pair(m_legacy ? "SourceUnit" : "sourceUnit", nodeId(*_node.annotation().sourceUnit)),
+		make_pair(m_legacy ? "SourceUnit" : "sourceUnit", idOrNull(_node.annotation().sourceUnit)),
 		make_pair("scope", idOrNull(_node.scope()))
 	};
 	attributes.emplace_back("unitAlias", _node.name());
@@ -363,7 +363,7 @@ bool ASTJsonConverter::visit(FunctionDefinition const& _node)
 		make_pair("implemented", _node.isImplemented()),
 		make_pair("scope", idOrNull(_node.scope()))
 	};
-	if (_node.isPartOfExternalInterface())
+	if (_node.scope() && _node.isPartOfExternalInterface())
 		attributes.emplace_back("functionSelector", _node.externalIdentifierHex());
 	if (!_node.annotation().baseFunctions.empty())
 		attributes.emplace_back(make_pair("baseFunctions", getContainerIds(_node.annotation().baseFunctions, true)));
@@ -388,7 +388,7 @@ bool ASTJsonConverter::visit(VariableDeclaration const& _node)
 		make_pair("scope", idOrNull(_node.scope())),
 		make_pair("typeDescriptions", typePointerToJson(_node.annotation().type, true))
 	};
-	if (_node.isStateVariable() && _node.isPublic())
+	if (_node.scope() && _node.isStateVariable() && _node.isPublic())
 		attributes.emplace_back("functionSelector", _node.externalIdentifierHex());
 	if (m_inEvent)
 		attributes.emplace_back("indexed", _node.isIndexed());
@@ -896,6 +896,7 @@ string ASTJsonConverter::functionCallKind(FunctionCallKind _kind)
 	case FunctionCallKind::StructConstructorCall:
 		return "structConstructorCall";
 	default:
+	    return "unset";
 		solAssert(false, "Unknown kind of function call.");
 	}
 }

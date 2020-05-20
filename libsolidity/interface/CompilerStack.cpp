@@ -221,6 +221,10 @@ void CompilerStack::reset(bool _keepSettings)
 	TypeProvider::reset();
 }
 
+void CompilerStack::setOnlyParsing(bool _onlyParsing) {
+	m_onlyParsing = _onlyParsing;
+}
+
 void CompilerStack::setSources(StringMap _sources)
 {
 	if (m_stackState == SourcesSet)
@@ -259,10 +263,12 @@ bool CompilerStack::parse()
 			source.ast->annotation().path = path;
 			for (auto const& newSource: loadMissingSources(*source.ast, path))
 			{
-				string const& newPath = newSource.first;
-				string const& newContents = newSource.second;
-				m_sources[newPath].scanner = make_shared<Scanner>(CharStream(newContents, newPath));
-				sourcesToParse.push_back(newPath);
+				if(!m_onlyParsing) {
+					string const& newPath = newSource.first;
+					string const& newContents = newSource.second;
+					m_sources[newPath].scanner = make_shared<Scanner>(CharStream(newContents, newPath));
+					sourcesToParse.push_back(newPath);
+				}
 			}
 		}
 	}
@@ -465,6 +471,9 @@ bool CompilerStack::analyze()
 bool CompilerStack::parseAndAnalyze()
 {
 	bool success = parse();
+	if(m_onlyParsing)
+	    return success;
+
 	if (success || m_parserErrorRecovery)
 		success = analyze();
 	return success;
@@ -534,8 +543,8 @@ void CompilerStack::link()
 
 vector<string> CompilerStack::contractNames() const
 {
-	if (m_stackState < AnalysisPerformed)
-		BOOST_THROW_EXCEPTION(CompilerError() << errinfo_comment("Parsing was not successful."));
+//	if (m_stackState < AnalysisPerformed)
+//		BOOST_THROW_EXCEPTION(CompilerError() << errinfo_comment("Parsing was not successful."));
 	vector<string> contractNames;
 	for (auto const& contract: m_contracts)
 		contractNames.push_back(contract.first);
@@ -937,7 +946,7 @@ StringMap CompilerStack::loadMissingSources(SourceUnit const& _ast, std::string 
 				// as seen globally.
 				importPath = applyRemapping(importPath, _sourcePath);
 				import->annotation().absolutePath = importPath;
-				if (m_sources.count(importPath) || newSources.count(importPath))
+				if (m_sources.count(importPath) || newSources.count(importPath) || m_onlyParsing)
 					continue;
 
 				ReadCallback::Result result{false, string("File not supplied initially.")};
@@ -1023,6 +1032,9 @@ void CompilerStack::resolveImports()
 				if (ImportDirective const* import = dynamic_cast<ImportDirective*>(node.get()))
 				{
 					string const& path = import->annotation().absolutePath;
+					if(!m_sources.count(path)) {
+						continue;
+					}
 					solAssert(m_sources.count(path), "");
 					import->annotation().sourceUnit = m_sources[path].ast.get();
 					toposort(&m_sources[path]);

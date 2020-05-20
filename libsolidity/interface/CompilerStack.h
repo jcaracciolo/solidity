@@ -188,6 +188,9 @@ public:
 	/// @param _metadataHash can be IPFS, Bzzr1, None
 	void setMetadataHash(MetadataHash _metadataHash);
 
+	/// Sets the compiler in only parsing mode. No imports will be processed, compilation will be skipped.
+	void setOnlyParsing(bool _onlyParsing);
+
 	/// Sets the sources. Must be set before parsing.
 	void setSources(StringMap _sources);
 
@@ -461,6 +464,7 @@ private:
 	/// If this is true, the stack will refuse to generate code.
 	bool m_hasError = false;
 	bool m_release = VersionIsRelease;
+	bool m_onlyParsing = false;
 };
 
 }

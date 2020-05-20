@@ -520,7 +520,7 @@ void DeclarationRegistrationHelper::endVisit(SourceUnit& _sourceUnit)
 bool DeclarationRegistrationHelper::visit(ImportDirective& _import)
 {
 	SourceUnit const* importee = _import.annotation().sourceUnit;
-	solAssert(!!importee, "");
+//	solAssert(!!importee, ""); Not sure about this Assert, Source unit will be null when not processing the imports
 	if (!m_scopes[importee])
 		m_scopes[importee] = make_shared<DeclarationContainer>(nullptr, m_scopes[nullptr].get());
 	m_scopes[&_import] = m_scopes[importee];
