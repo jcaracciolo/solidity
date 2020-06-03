@@ -311,6 +311,8 @@ public:
 
 	RevertStrings revertStrings() const { return m_revertStrings; }
 
+	evmasm::AssemblyPointer m_asm;
+
 private:
 	/// Updates source location set in the assembly.
 	void updateSourceLocation();
@@ -349,7 +351,6 @@ private:
 		mutable std::queue<Declaration const*> m_functionsToCompile;
 	} m_functionCompilationQueue;
 
-	evmasm::AssemblyPointer m_asm;
 	/// Version of the EVM to compile against.
 	langutil::EVMVersion m_evmVersion;
 	RevertStrings const m_revertStrings;

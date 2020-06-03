@@ -39,6 +39,10 @@
 #include <numeric>
 #include <utility>
 
+#include <libsolidity/interface/StorageLayout.h>
+#include <fstream>
+
+
 using namespace std;
 using namespace solidity;
 using namespace solidity::evmasm;
@@ -1761,6 +1765,21 @@ bool ExpressionCompiler::visit(IndexAccess const& _indexAccess)
 				utils().storeInMemoryDynamic(*TypeProvider::uint256());
 				m_context << u256(0);
 			}
+            MappingType const* mapType = &dynamic_cast<MappingType const&>(baseType);
+            ofstream outfile;
+            outfile.open("mappings.json", std::ios_base::app);
+            auto sl = StorageLayout();
+            auto id =  m_context.m_asm->setMappingKeyMark();
+            sl.generate(mapType);
+            string key = sl.typeKeyName(mapType);
+            sl.generate(mapType->keyType());
+            sl.m_types[key]["value"] = sl.m_types[sl.m_types[key]["value"].asCString()];
+            sl.m_types[key]["id"] = id;
+			if(id > 0) {
+				outfile << "," << endl;
+			}
+			outfile << sl.m_types[key] << endl;
+            outfile.close();
 			m_context << Instruction::KECCAK256;
 			m_context << u256(0);
 			setLValueToStorageItem(_indexAccess);

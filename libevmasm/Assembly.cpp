@@ -37,6 +37,8 @@ using namespace solidity;
 using namespace solidity::evmasm;
 using namespace solidity::langutil;
 using namespace solidity::util;
+unsigned Assembly::m_usedVariableMarks = 0;
+unsigned Assembly::m_usedMappingKeysMarks = 0;
 
 AssemblyItem const& Assembly::append(AssemblyItem const& _i)
 {
@@ -689,6 +691,12 @@ LinkerObject const& Assembly::assemble() const
 			m_tagPositionsInBytecode[size_t(i.data())] = ret.bytecode.size();
 			ret.bytecode.push_back((uint8_t)Instruction::JUMPDEST);
 			break;
+        case VariableMark:
+            ret.variableMarks[size_t(i.data())] =  ret.bytecode.size();
+            break;
+		case MappingKeyMark:
+			ret.mappingKeyMarks[size_t(i.data())] =  ret.bytecode.size();
+            break;
 		default:
 			assertThrow(false, InvalidOpcode, "Unexpected opcode while assembling.");
 		}

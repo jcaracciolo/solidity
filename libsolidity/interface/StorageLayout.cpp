@@ -51,7 +51,7 @@ Json::Value StorageLayout::generate(VariableDeclaration const& _var, u256 const&
 
 	varEntry["label"] = _var.name();
 	varEntry["astId"] = int(_var.id());
-	varEntry["contract"] = m_contract->fullyQualifiedName();
+//	varEntry["contract"] = m_contract->fullyQualifiedName();
 	varEntry["slot"] = _slot.str();
 	varEntry["offset"] = _offset;
 	varEntry["type"] = typeKeyName(varType);

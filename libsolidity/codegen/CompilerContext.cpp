@@ -47,6 +47,8 @@
 
 #include <utility>
 #include <numeric>
+#include <libsolidity/interface/StorageLayout.h>
+#include <fstream>
 
 // Change to "define" to output all intermediate code
 #undef SOL_OUTPUT_ASM
@@ -200,6 +202,23 @@ pair<string, set<string>> CompilerContext::requestedYulFunctions()
 	return {m_yulFunctionCollector.requestedFunctions(), std::move(empty)};
 }
 
+string location(VariableDeclaration::Location _location)
+{
+    switch (_location)
+    {
+        case VariableDeclaration::Location::Unspecified:
+            return "default";
+        case VariableDeclaration::Location::Storage:
+            return "storage";
+        case VariableDeclaration::Location::Memory:
+            return "memory";
+        case VariableDeclaration::Location::CallData:
+            return "calldata";
+    }
+    // To make the compiler happy
+    return {};
+}
+
 void CompilerContext::addVariable(
 	VariableDeclaration const& _declaration,
 	unsigned _offsetToCurrent
@@ -211,6 +230,24 @@ void CompilerContext::addVariable(
 	// but that might change when new types are introduced.
 	solAssert(sizeOnStack == 1 || sizeOnStack == 2, "");
 	m_localVariables[&_declaration].push_back(unsigned(m_asm->deposit()) - _offsetToCurrent);
+	if(!_declaration.name().empty()) {
+        ofstream outfile;
+        outfile.open("variables.json", std::ios_base::app);
+        auto id = m_asm->setVariableMark();
+		auto sl = StorageLayout();
+		sl.generate(_declaration.type());
+		string key = sl.typeKeyName(_declaration.type());
+		sl.m_types[key]["label"] = _declaration.name();
+		sl.m_types[key]["id"] = id;
+		sl.m_types[key]["stackOffset"] = _offsetToCurrent;
+		sl.m_types[key]["typeName"] = key;
+		sl.m_types[key]["location"] = location(_declaration.referenceLocation());
+		if(id > 0) {
+			outfile << "," << endl;
+		}
+        outfile << sl.m_types[key] << endl;
+        outfile.close();
+	}
 }
 
 void CompilerContext::removeVariable(Declaration const& _declaration)

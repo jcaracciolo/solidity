@@ -32,6 +32,11 @@ void LinkerObject::append(LinkerObject const& _other)
 {
 	for (auto const& ref: _other.linkReferences)
 		linkReferences[ref.first + bytecode.size()] = ref.second;
+	for (auto const& ref: _other.variableMarks)
+		variableMarks[ref.first] = ref.second + bytecode.size();
+	for (auto const& ref: _other.mappingKeyMarks)
+		mappingKeyMarks[ref.first] = ref.second + bytecode.size();
+
 	bytecode += _other.bytecode;
 }
 

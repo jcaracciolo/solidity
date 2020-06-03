@@ -36,7 +36,7 @@ public:
 	/// @return A JSON representation of the contract's storage layout.
 	Json::Value generate(ContractDefinition const& _contractDef);
 
-private:
+//private:
 	/// Generates the JSON information for a variable and its storage location.
 	Json::Value generate(VariableDeclaration const& _var, u256 const& _slot, unsigned _offset);
 

@@ -69,6 +69,7 @@
 
 #include <boost/algorithm/string/replace.hpp>
 #include <utility>
+#include <fstream>
 
 using namespace std;
 using namespace solidity;
@@ -497,6 +498,14 @@ bool CompilerStack::isRequestedContract(ContractDefinition const& _contract) con
 
 bool CompilerStack::compile()
 {
+	ofstream outfile;
+	outfile.open("variables.json");
+	outfile <<  "[" << endl;
+	outfile.close();
+	outfile.open("mappings.json");
+	outfile <<  "[" << endl;
+	outfile.close();
+
 	if (m_stackState < AnalysisPerformed)
 		if (!parseAndAnalyze())
 			return false;
@@ -519,6 +528,13 @@ bool CompilerStack::compile()
 				}
 	m_stackState = CompilationSuccessful;
 	this->link();
+
+	outfile.open("variables.json", std::ios_base::app);
+	outfile <<  "]" << endl;
+	outfile.close();
+	outfile.open("mappings.json", std::ios_base::app);
+	outfile <<  "]" << endl;
+	outfile.close();
 	return true;
 }
 

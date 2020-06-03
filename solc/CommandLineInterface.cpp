@@ -317,6 +317,25 @@ void CommandLineInterface::handleBinary(string const& _contract)
 			createFile(m_compiler->filesystemFriendlyName(_contract) + ".bin", objectWithLinkRefsHex(m_compiler->object(_contract)));
 		else
 		{
+
+            ofstream outfile;
+            outfile.open("variablesOffset.tsv");
+            auto diff = m_compiler->object(_contract).bytecode.size() -  m_compiler->runtimeObject(_contract).bytecode.size();
+            for (auto const& ref: m_compiler->object(_contract).variableMarks) {
+                if(diff < ref.second)
+                    outfile << ref.first << "\t" << ref.second << "\t" << ref.second - diff << endl;
+                else
+                    outfile << ref.first << "\t" << ref.second << "\t" << "null" << endl;
+            }
+            outfile.close();
+            outfile.open("mappingsOffset.tsv");
+            for (auto const& ref: m_compiler->object(_contract).mappingKeyMarks) {
+                if(diff < ref.second)
+                    outfile << ref.first << "\t" << ref.second << "\t" << ref.second - diff << endl;
+                else
+                    outfile << ref.first << "\t" << ref.second << "\t" << "null" << endl;
+            }
+            outfile.close();
 			sout() << "Binary:" << endl;
 			sout() << objectWithLinkRefsHex(m_compiler->object(_contract)) << endl;
 		}
