@@ -45,7 +45,8 @@ class Assembly
 public:
 	AssemblyItem newTag() { assertThrow(m_usedTags < 0xffffffff, AssemblyException, ""); return AssemblyItem(Tag, m_usedTags++); }
 	AssemblyItem newPushTag() { assertThrow(m_usedTags < 0xffffffff, AssemblyException, ""); return AssemblyItem(PushTag, m_usedTags++); }
-    unsigned setVariableMark() { append(AssemblyItem(VariableMark, m_usedVariableMarks++)); return m_usedVariableMarks - 1; }
+    void setVariableMark(signed long int _id) { append(AssemblyItem(VariableMark, _id)); }
+    void setVariableEndMark(signed long int _id) { append(AssemblyItem(VariableEndMark, _id)); }
     unsigned setMappingKeyMark() { append(AssemblyItem(MappingKeyMark, m_usedMappingKeysMarks++)); return m_usedMappingKeysMarks - 1; }
 	/// Returns a tag identified by the given name. Creates it if it does not yet exist.
 	AssemblyItem namedTag(std::string const& _name);
@@ -161,7 +162,6 @@ private:
 		std::string _jumpType = std::string()
 	);
 	static std::string toStringInHex(u256 _value);
-	static unsigned m_usedVariableMarks;
 	static unsigned m_usedMappingKeysMarks;
 
 protected:

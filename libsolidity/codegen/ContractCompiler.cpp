@@ -638,9 +638,18 @@ bool ContractCompiler::visit(FunctionDefinition const& _function)
 			errinfo_sourceLocation(_function.location()) <<
 			errinfo_comment("Stack too deep, try removing local variables.")
 		);
+
+	bool deleted = false;
 	while (stackLayout.back() != int(stackLayout.size() - 1))
 		if (stackLayout.back() < 0)
 		{
+			if (!deleted) {
+				for (ASTPointer<VariableDeclaration> const &variable: _function.parameters() +
+																	  _function.returnParameters()) {
+					m_context.removeVariable(*variable);
+				}
+				deleted = true;
+			}
 			m_context << Instruction::POP;
 			stackLayout.pop_back();
 		}
@@ -653,8 +662,10 @@ bool ContractCompiler::visit(FunctionDefinition const& _function)
 		if (stackLayout[i] != i)
 			solAssert(false, "Invalid stack layout on cleanup.");
 
-	for (ASTPointer<VariableDeclaration> const& variable: _function.parameters() + _function.returnParameters())
-		m_context.removeVariable(*variable);
+	if(!deleted) {
+		for (ASTPointer<VariableDeclaration> const &variable: _function.parameters() + _function.returnParameters())
+			m_context.removeVariable(*variable);
+	}
 
 	m_context.adjustStackOffset(-(int)c_returnValuesSize);
 
@@ -1172,6 +1183,8 @@ bool ContractCompiler::visit(Return const& _return)
 			CompilerUtils(m_context).moveToStackVariable(*retVariable);
 	}
 
+	unsigned amount = m_context.stackHeight() - m_returnTags.back().second;
+	m_context.removeVariablesAboveStackHeight(amount);
 	CompilerUtils(m_context).popAndJump(m_returnTags.back().second, m_returnTags.back().first);
 	return false;
 }
@@ -1338,9 +1351,9 @@ void ContractCompiler::appendModifierOrFunctionCode()
 		m_context << m_returnTags.back().first;
 		m_returnTags.pop_back();
 
-		CompilerUtils(m_context).popStackSlots(stackSurplus);
 		for (auto var: addedVariables)
 			m_context.removeVariable(*var);
+		CompilerUtils(m_context).popStackSlots(stackSurplus);
 	}
 	m_modifierDepth--;
 	m_context.setModifierDepth(m_modifierDepth);

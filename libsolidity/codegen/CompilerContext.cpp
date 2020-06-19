@@ -219,6 +219,7 @@ string location(VariableDeclaration::Location _location)
     return {};
 }
 
+static bool isFirst = true;
 void CompilerContext::addVariable(
 	VariableDeclaration const& _declaration,
 	unsigned _offsetToCurrent
@@ -233,25 +234,29 @@ void CompilerContext::addVariable(
 	if(!_declaration.name().empty()) {
         ofstream outfile;
         outfile.open("variables.json", std::ios_base::app);
-        auto id = m_asm->setVariableMark();
+        m_asm->setVariableMark(_declaration.id());
 		auto sl = StorageLayout();
 		sl.generate(_declaration.type());
 		string key = sl.typeKeyName(_declaration.type());
 		sl.m_types[key]["label"] = _declaration.name();
-		sl.m_types[key]["id"] = id;
+		sl.m_types[key]["id"] = _declaration.id();
 		sl.m_types[key]["stackOffset"] = _offsetToCurrent;
 		sl.m_types[key]["typeName"] = key;
 		sl.m_types[key]["location"] = location(_declaration.referenceLocation());
-		if(id > 0) {
-			outfile << "," << endl;
-		}
-        outfile << sl.m_types[key] << endl;
+		if(!isFirst) outfile << "," << endl;
+		isFirst = false;
+		outfile << sl.m_types[key] << endl;
         outfile.close();
 	}
 }
 
 void CompilerContext::removeVariable(Declaration const& _declaration)
 {
+	if(m_localVariables.count(&_declaration) == 0) return;
+	if(!_declaration.name().empty()) {
+		m_asm->setVariableEndMark(_declaration.id());
+	}
+
 	solAssert(m_localVariables.count(&_declaration) && !m_localVariables[&_declaration].empty(), "");
 	m_localVariables[&_declaration].pop_back();
 	if (m_localVariables[&_declaration].empty())

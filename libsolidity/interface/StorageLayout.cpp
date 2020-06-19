@@ -75,10 +75,17 @@ void StorageLayout::generate(TypePointer _type)
 	{
 		Json::Value members(Json::arrayValue);
 		auto const& structDef = structType->structDefinition();
-		for (auto const& member: structDef.members())
+		auto defMembers = structDef.members();
+		for (auto const& member: structType->members(nullptr))
 		{
-			auto const& offsets = structType->storageOffsetsOfMember(member->name());
-			members.append(generate(*member, offsets.first, offsets.second));
+		    //Make sure that the variable is present. Memory structs dont have mappings
+			auto const& offsets = structType->storageOffsetsOfMember(member.name);
+			ASTPointer<VariableDeclaration> defMember = nullptr;
+			for (size_t index = 0; index < structDef.members().size(); ++index)
+				if (defMembers[index]->name() == member.name)
+					defMember=defMembers[index];
+
+			members.append(generate(*defMember, offsets.first, offsets.second));
 		}
 		typeInfo["members"] = move(members);
 		typeInfo["encoding"] = "inplace";

@@ -97,7 +97,7 @@ KnownState::StoreOperation KnownState::feedItem(AssemblyItem const& _item, bool 
 		return feedItem(AssemblyItem(Instruction::POP), _copyItem);
 	else if (_item.type() != Operation)
 	{
-		assertThrow(_item.deposit() == 1, InvalidDeposit, "");
+//		assertThrow(_item.deposit() == 1, InvalidDeposit, "");
 		if (_item.pushedValue())
 			// only available after assembly stage, should not be used for optimisation
 			setStackElement(++m_stackHeight, m_expressionClasses->find(*_item.pushedValue()));

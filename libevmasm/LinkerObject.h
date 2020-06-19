@@ -36,8 +36,9 @@ struct LinkerObject
 	/// The bytecode.
 	bytes bytecode;
 
-	/// Map from offsets in bytecode to mark identifiers.
+	/// Map from mar identifiers to offsets in bytecode
 	std::map<size_t, size_t> variableMarks;
+	std::map<size_t, size_t> variableEndMarks;
 	std::map<size_t, size_t> mappingKeyMarks;
 
 	/// Map from offsets in bytecode to library identifiers. The addresses starting at those offsets

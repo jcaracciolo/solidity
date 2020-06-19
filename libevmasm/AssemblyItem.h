@@ -43,6 +43,7 @@ enum AssemblyItemType {
 	PushProgramSize,
 	Tag,
     VariableMark,
+    VariableEndMark,
 	MappingKeyMark,
 	PushData,
 	PushLibraryAddress, ///< Push a currently unknown address of another (library) contract.
