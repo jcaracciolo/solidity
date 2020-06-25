@@ -325,6 +325,9 @@ std::string AssemblyItem::computeSourceMapping(
 	char prevJump = 0;
 	for (auto const& item: _items)
 	{
+	    if(item.type() == VariableMark || item.type() == VariableEndMark || item.type() == MappingKeyMark) {
+            continue;
+	    }
 		if (!ret.empty())
 			ret += ";";
 
