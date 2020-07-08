@@ -1184,7 +1184,7 @@ bool ContractCompiler::visit(Return const& _return)
 	}
 
 	unsigned amount = m_context.stackHeight() - m_returnTags.back().second;
-	m_context.removeVariablesAboveStackHeight(amount);
+	m_context.setVariableEndMarkAboveStackHeight(amount);
 	CompilerUtils(m_context).popAndJump(m_returnTags.back().second, m_returnTags.back().first);
 	return false;
 }

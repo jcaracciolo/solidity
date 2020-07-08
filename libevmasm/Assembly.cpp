@@ -694,7 +694,9 @@ LinkerObject const& Assembly::assemble() const
             ret.variableMarks[size_t(i.data())] =  ret.bytecode.size();
             break;
         case VariableEndMark:
-            ret.variableEndMarks[size_t(i.data())] =  ret.bytecode.size() - 1;
+        	if(!ret.variableEndMarks.count(size_t(i.data()))) {
+				ret.variableEndMarks[size_t(i.data())] = ret.bytecode.size() - 1;
+			}
             break;
 		case MappingKeyMark:
 			ret.mappingKeyMarks[size_t(i.data())] =  ret.bytecode.size();

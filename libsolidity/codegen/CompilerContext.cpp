@@ -277,6 +277,24 @@ void CompilerContext::removeVariablesAboveStackHeight(unsigned _stackHeight)
 		removeVariable(*_var);
 }
 
+void CompilerContext::setVariableEndMarkAboveStackHeight(unsigned _stackHeight)
+{
+	vector<Declaration const*> toRemove;
+	for (auto _var: m_localVariables)
+	{
+		solAssert(!_var.second.empty(), "");
+		solAssert(_var.second.back() <= stackHeight(), "");
+		if (_var.second.back() >= _stackHeight)
+			toRemove.push_back(_var.first);
+	}
+	for (auto _declaration: toRemove) {
+		if(m_localVariables.count(_declaration) == 0) return;
+		if(!_declaration->name().empty()) {
+			m_asm->setVariableEndMark(_declaration->id());
+		}
+	}
+}
+
 unsigned CompilerContext::numberOfLocalVariables() const
 {
 	return m_localVariables.size();
